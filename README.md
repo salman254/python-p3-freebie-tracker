@@ -180,3 +180,245 @@ data).
 - `Dev.give_away(dev, freebie)` accepts a `Dev` instance and a `Freebie`
   instance, changes the freebie's dev to be the given dev; your code should only
   make the change if the freebie belongs to the dev who's giving it away
+
+
+
+Freebie Tracker
+This is a Python-based application built using Flask and SQLAlchemy to track freebies given by companies to developers. The application uses object-oriented principles to define models for Company, Dev (developer), and Freebie (item received by a developer).
+
+Features
+A company can give freebies to developers.
+
+A developer can receive and give away freebies.
+
+Each freebie links a developer and a company.
+
+The system allows for tracking which freebies a developer has received from which company.
+
+Table of Contents
+Installation
+
+Usage
+
+Models
+
+Company Model
+
+Dev Model
+
+Freebie Model
+
+Methods
+
+Company Methods
+
+Dev Methods
+
+Freebie Methods
+
+Database Setup
+
+Testing
+
+Installation
+Follow the steps below to set up the application on your local machine.
+
+Prerequisites
+Python 3.x
+
+Flask
+
+SQLAlchemy
+
+Flask-Migrate
+
+Steps to Install
+Clone the repository:
+
+bash
+Copy code
+git clone https://github.com/your-repository/freebie-tracker.git
+Navigate into the project folder:
+
+bash
+Copy code
+cd freebie-tracker
+Create a virtual environment:
+
+bash
+Copy code
+python3 -m venv .venv
+Activate the virtual environment:
+
+On macOS/Linux:
+
+bash
+Copy code
+source .venv/bin/activate
+On Windows:
+
+bash
+Copy code
+.venv\Scripts\activate
+Install the dependencies:
+
+bash
+Copy code
+pip install -r requirements.txt
+Usage
+To run the application:
+
+Set the environment variable:
+
+bash
+Copy code
+export FLASK_APP=app.py
+export FLASK_ENV=development
+Run the application:
+
+bash
+Copy code
+flask run
+The application should now be running on http://127.0.0.1:5000/.
+
+Models
+Company Model
+This model represents a company in the system and tracks the freebies it gives out.
+
+python
+Copy code
+class Company(db.Model):
+    __tablename__ = 'companies'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, nullable=False)
+    founding_year = db.Column(db.Integer, nullable=False)
+
+    freebies = relationship('Freebie', backref='company')  # One-to-many with Freebie
+    devs = relationship('Dev', secondary='freebies', backref='companies')  # Many-to-many with Dev
+Attributes:
+
+id: Unique identifier for the company.
+
+name: Name of the company.
+
+founding_year: Year the company was founded.
+
+Relationships:
+
+One-to-many relationship with Freebie.
+
+Many-to-many relationship with Dev through Freebie.
+
+Dev Model
+This model represents a developer who collects freebies from companies.
+
+python
+Copy code
+class Dev(db.Model):
+    __tablename__ = 'devs'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, nullable=False)
+
+    freebies = relationship('Freebie', backref='dev')  # One-to-many with Freebie
+    companies = relationship('Company', secondary='freebies', backref='devs')  # Many-to-many with Company
+Attributes:
+
+id: Unique identifier for the developer.
+
+name: Name of the developer.
+
+Relationships:
+
+One-to-many relationship with Freebie.
+
+Many-to-many relationship with Company through Freebie.
+
+Freebie Model
+This model represents a freebie given by a company to a developer.
+
+python
+Copy code
+class Freebie(db.Model):
+    __tablename__ = 'freebies'
+    id = db.Column(db.Integer, primary_key=True)
+    item_name = db.Column(db.String, nullable=False)
+    value = db.Column(db.Integer, nullable=False)
+
+    dev_id = db.Column(db.Integer, ForeignKey('devs.id'), nullable=False)
+    company_id = db.Column(db.Integer, ForeignKey('companies.id'), nullable=False)
+
+    dev = relationship('Dev', backref='freebies')
+    company = relationship('Company', backref='freebies')
+Attributes:
+
+id: Unique identifier for the freebie.
+
+item_name: Name of the freebie.
+
+value: Value of the freebie.
+
+dev_id: Foreign key to the devs table.
+
+company_id: Foreign key to the companies table.
+
+Relationships:
+
+One-to-one relationship with Dev and Company.
+
+Methods
+Company Methods
+give_freebie(dev, item_name, value): This method creates a new Freebie and associates it with a developer and company.
+
+oldest_company(): This class method returns the company with the earliest founding year.
+
+Dev Methods
+received_one(item_name): This method checks if a developer has received a freebie with a given item name.
+
+give_away(dev, freebie): This method allows a developer to transfer a freebie to another developer.
+
+Freebie Methods
+print_details(): This method returns a string formatted as:
+
+css
+Copy code
+"{dev name} owns a {freebie item_name} from {company name}"
+Database Setup
+Migrations
+Initialize Migration Folder:
+
+bash
+Copy code
+flask db init
+Generate Migrations:
+
+bash
+Copy code
+flask db migrate -m "Added Freebie table and relationships"
+Apply Migrations:
+
+bash
+Copy code
+flask db upgrade
+Seed Data:
+Run seed.py to add initial Company, Dev, and Freebie data for testing.
+
+Testing
+Testing the Relationships:
+Use python debug.py to verify relationships between Dev, Company, and Freebie.
+
+Example to test if a developer has received a freebie:
+
+python
+Copy code
+dev = Dev.query.filter_by(name="Alice").first()
+print(dev.freebies)  # Check the freebies the dev has received
+Test Methods:
+
+Ensure that methods like give_freebie, received_one, and give_away work as expected by calling them in debug.py or during test execution.
+
+Contributing
+Feel free to fork the repository and submit pull requests. Any issues or improvements can be reported in the issues section.
+
+License
+This project is licensed under the MIT License - see the LICENSE file for details.
+
